@@ -1,0 +1,135 @@
+---
+title: "Final Project: Generalized Additive Models (GAM)" 
+author: "**Rachel Holman, Grace Zhang, Rose E.M.**"
+format: ds6030hw-html
+---
+
+
+```{r config, include=FALSE}
+# Set global configurations and settings here
+knitr::opts_chunk$set()                 # set global chunk options
+ggplot2::theme_set(ggplot2::theme_bw()) # set ggplot2 theme
+```
+
+
+# Introduction to Generalize Additive Models (GAM)
+
+In the contemporary business landscape, studying customer shopping trends and preferences is critical for businesses to tailor their products, marketing strategies, and overall customer experience. Our research project endeavors to explore the underlying patterns within the `shopping_trend` dataset, offering a better window into the dynamic world of customer behavior. By delving into anonymized customer shopping trends, we aim to find the factors that influence the amount of purchasing and subscription status by conducting linear and logistic Generalized Additive Models (GAMs)    <….> 
+
+With a collection of 3900 records, this dataset encompasses various features related to customer shopping preferences, gathering essential information for businesses seeking to enhance their understanding of their customer base. The features include customer age, gender, purchase amount, preferred payment methods, frequency of purchases, and feedback ratings. Additionally, data on the type of items purchased, shopping frequency, preferred shopping seasons, and interactions with promotional offers is included.  
+
+<https://www.kaggle.com/datasets/iamsouravbanerjee/customer-shopping-trends-dataset>
+
+- `Customer ID` - Unique identifier for each customer 
+
+- `Age` - Age of the customer 
+
+- `Gender` - Gender of the customer (Male/Female) 
+
+- `Item Purchased` - The item purchased by the customer 
+
+- `Category` - Category of the item purchased 
+
+- `Purchase Amount (USD)` - The amount of the purchase in USD 
+
+- `Location` - Location where the purchase was made 
+
+- `Size` - Size of the purchased item 
+
+- `Color` - Color of the purchased item 
+
+- `Season` - Season during which the purchase was made 
+
+- `Review Rating` - Rating given by the customer for the purchased item 
+
+- `Subscription Status` - Indicates if the customer has a subscription (Yes/No) 
+
+- `Shipping Type` - Type of shipping chosen by the customer 
+
+- `Discount Applied` - Indicates if a discount was applied to the purchase (Yes/No) 
+
+- `Promo Code Used` - Indicates if a promo code was used for the purchase (Yes/No) 
+
+- `Previous Purchases` - The total count of transactions concluded by the customer at the store, excluding the ongoing transaction 
+
+- `Payment Method` - Customer's most preferred payment method 
+
+- `Frequency of Purchases` - Frequency at which the customer makes purchases (e.g., Weekly, Fortnightly, Monthly) 
+
+ 
+
+ 
+
+# Specialty of GAM: 
+
+GAMs could be used on datasets that consist of predictors that are associated with the outcome variable and the response variable. GAMs are just as versatile as the GLMs because they can be used to model both numeric and categorical response variables. However, GAMs could also be applied to model features that have nonlinear relationship with the response variable. <interpretable, additive, smoothness...> 
+
+
+
+# Advantages and Disadvantages: 
+
+The principal advantage of GAM is its ability to model highly complex nonlinear relationships when the number of potential predictors is large. The main disadvantage of GAM is its computational complexity; like other nonparametric methods, GAM has a high propensity for overfitting. 
+
+
+|    | Advantages of GAMs                                                                                                                           | Disadvantages of GAMs                                                                                                                                                                  |
+|----|----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1. | **Flexibility:** GAMs can model various relationships, including non-linear and complex patterns.                                            | **Complexity:** GAMs can become computationally intensive for large datasets or high-dimensional problems.                                                                             |
+| 2. | **Interpretability:** They provide interpretable results, making understanding the relationships between predictors and the response easier. | **Data Requirements:** GAMs may require larger sample sizes to capture non-linear patterns effectively.                                                                                |
+| 3. | **Non-linearity:** GAMs can capture intricate, non-linear relationships that traditional linear models cannot represent.                     | **Sensitivity to Smoothing Parameters:** The choice of smoothing parameters can impact model results, requiring careful tuning.                                                        |
+| 4. | **Regularization:** GAMs can incorporate regularization techniques to prevent overfitting and improve generalization.                        | **Model Selection:** Selecting the appropriate number and type of smooth terms can be challenging.                                                                                     |
+| 5. | **Visualization:** The smooth functions in GAMs can be visually represented, aiding in model interpretation.                                 | **Limited to Regression and Classification:** GAMs are primarily suited for regression and classification tasks and may not be suitable for more complex tasks like image recognition. |
+| 6. | **Insensitive to Outliers:** GAM outliers do not have as strong of a global influence even if they have a local influence on fit.            | **Wider confidence intervals and less powerful tests.** As a tradeoff for the high flexibility, GAMs generally have wider confidence intervals than simpler models.                    |
+ 
+
+ 
+More disadvantages: 
+
+**Cannot model with non-additive relationships.** GAMs struggle in situations where the relationships between the features and the outcome variables are not additive. They do not capture situations where there are interactions between multiple features where one the value of one feature affects the relationship between another feature and the outcome variable natively. 
+
+**Not well known.** Not as commonly used or well known as many other supervised learning models. That means that collaborators may need to set aside some time to learn about the model before they can contribute meaningfully. 
+
+**Require some validation.** GAMs are highly flexible and can sometimes converge to solutions that do not make sense. It is generally recommended that you spend some time inspecting the results of your models to make sure that they make sense. Generalized additive models might not be the best option if you do not have bandwidth for this. 
+
+**Not guaranteed to converge.** One disadvantage of GAMs is that the models are not guaranteed to converge and you may need to experiment with different model training routines before you arrive on a model that does converge appropriately. 
+
+**Sensitive to predictors that are associated with one another.** Much like generalized linear models are sensitive to situations where multiple predictors are linearly correlated with one another, generalized additive models are also sensitive to situations where multiple predictors display similar patterns. Concurvity is a generalization of multicollinearity that is used to describe this specific situation. 
+
+**Does not natively handle missing values.** Another disadvantage of GAMs is that they do not natively handle missing values. Most implementations of generalized additive models require the user to select a method that will be used to handle missing data. While there are some more advanced options, the default option is usually to drop rows with missing values. 
+
+ 
+# R and Python packages for GAMs
+
+*Documentation goes here*
+
+
+# Data Cleaning and EDA
+
+```{r}
+
+```
+
+
+# GAM for Linear Regression 
+
+```{r}
+
+```
+
+
+# GAM for Logistic Regression
+
+```{r}
+
+```
+
+
+# GAM vs. GLM
+
+```{r}
+
+```
+
+
+
+
+
