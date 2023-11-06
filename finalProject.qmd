@@ -10,6 +10,14 @@ knitr::opts_chunk$set()                 # set global chunk options
 ggplot2::theme_set(ggplot2::theme_bw()) # set ggplot2 theme
 ```
 
+```{r packages, message=FALSE, warning=FALSE}
+library(tidyverse)    # functions for data manipulation  
+library(ggplot2)
+library(MASS)
+library(dplyr)
+library(GGally)
+```
+
 # Introduction to Generalize Additive Models (GAM)
 
 In the contemporary business landscape, studying customer shopping trends and preferences is critical for businesses to tailor their products, marketing strategies, and overall customer experience. Our research project endeavors to explore the underlying patterns within the `shopping_trend` dataset, offering a better window into the dynamic world of customer behavior. By delving into anonymized customer shopping trends, we aim to find the factors that influence the amount of purchasing and subscription status by conducting linear and logistic Generalized Additive Models (GAMs) \<....\>
