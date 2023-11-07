@@ -16,6 +16,8 @@ library(ggplot2)
 library(MASS)
 library(dplyr)
 library(GGally)
+library(kableExtra)
+library(DT)
 ```
 
 # Introduction to Generalize Additive Models (GAM)
@@ -101,35 +103,38 @@ More disadvantages:
 
 ```{r}
 # import data
-shopping_trend <- read.csv('/Users/ziqia/OneDrive/Desktop/Statistical Learning/project/shopping_trends_updated.csv')
-shopping_trend
+shopping_trend <- read.csv('shopping_trends_updated.csv')
+datatable(shopping_trend)
 ```
+
 ```{r}
 #data type of variables
 str(shopping_trend)
 ```
+
 ```{r}
 # check NAs
 colSums(is.na(shopping_trend))
 ```
 
 ```{r}
-
 # check zeros
 colSums(shopping_trend == 0, na.rm = TRUE)
 ```
+
 ```{r}
 # correlation between numeric variables
 num_corr_tb<- shopping_trend %>% 
   #include dplyr::, otherwise dplyr would clash with MASS package
   dplyr::select(-Customer.ID, -Gender, -Item.Purchased, -Category, -Location,
-                -Size, -Color, -Season, -Subscription.Status, -Shipping.Type, -Discount.Applied,
-                -Promo.Code.Used, -Payment.Method, -Frequency.of.Purchases)
+                -Size, -Color, -Season, -Subscription.Status, -Shipping.Type,
+                -Discount.Applied, -Promo.Code.Used, -Payment.Method,
+                -Frequency.of.Purchases)
 
 
 #num_corr_tb 
-cor(corr_tb)
-ggpairs(corr_tb)
+datatable(cor(num_corr_tb))
+ggpairs(num_corr_tb)
 
 chisq.test(shopping_trend$Location, shopping_trend$Subscription.Status)
 #export correlation dataset
@@ -138,20 +143,33 @@ chisq.test(shopping_trend$Location, shopping_trend$Subscription.Status)
 
 ```{r}
 #one-hot coding  (not sure if we are gonna use it for future, so I'm leaving it here for now)
-shopping_trend$Gender <- as.integer(factor(shopping_trend$Gender))
-shopping_trend$Item.Purchased <- as.integer(factor(shopping_trend$Item.Purchased))
-shopping_trend$Category <- as.integer(factor(shopping_trend$Category))
-shopping_trend$Location <- as.integer(factor(shopping_trend$Location))
-shopping_trend$Size <- as.integer(factor(shopping_trend$Size))
-shopping_trend$Color <- as.integer(factor(shopping_trend$Color))
-shopping_trend$Season <- as.integer(factor(shopping_trend$Season))
-shopping_trend$Shipping.Type  <- as.integer(factor(shopping_trend$Shipping.Type ))
-shopping_trend$Discount.Applied <- as.integer(factor(shopping_trend$Discount.Applied))
-shopping_trend$Promo.Code.Used <- as.integer(factor(shopping_trend$Promo.Code.Used))
-shopping_trend$Payment.Method <- as.integer(factor(shopping_trend$Payment.Method))
-shopping_trend$Frequency.of.Purchases <- as.integer(factor(shopping_trend$Frequency.of.Purchases))
-shopping_trend$Subscription.Status <- as.integer(factor(shopping_trend$Subscription.Status))
+shopping_trend$Gender <- as.integer(factor(shopping_trend$Gender))-1
+shopping_trend$Item.Purchased <- as.integer(factor(shopping_trend$Item.Purchased)) -1
+shopping_trend$Category <- as.integer(factor(shopping_trend$Category)) -1
+shopping_trend$Location <- as.integer(factor(shopping_trend$Location)) -1
+shopping_trend$Size <- as.integer(factor(shopping_trend$Size)) -1
+shopping_trend$Color <- as.integer(factor(shopping_trend$Color)) -1
+shopping_trend$Season <- as.integer(factor(shopping_trend$Season)) -1
+shopping_trend$Shipping.Type  <- as.integer(factor(shopping_trend$Shipping.Type )) -1
+shopping_trend$Discount.Applied <- as.integer(factor(shopping_trend$Discount.Applied)) -1
+shopping_trend$Promo.Code.Used <- as.integer(factor(shopping_trend$Promo.Code.Used)) -1
+shopping_trend$Payment.Method <- as.integer(factor(shopping_trend$Payment.Method)) -1
+shopping_trend$Frequency.of.Purchases <- as.integer(factor(shopping_trend$Frequency.of.Purchases)) -1
+shopping_trend$Subscription.Status <- as.integer(factor(shopping_trend$Subscription.Status)) -1
+
+datatable(shopping_trend)
 ```
+
+
+
+
+# GAM for Linear Regression
+
+```{r}
+
+```
+
+
 # GAM for Logistic Regression
 
 ```{r}
