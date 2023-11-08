@@ -163,12 +163,96 @@ datatable(shopping_trend)
 
 
 
-# GAM for Linear Regression
+# GAM for Linear Regression (Predicting Purchase Amount)
 
 ```{r}
-# lets predict purchase.amount with age, gender, review.rating, and subscription.status
-
+# lets predict purchase.amount with age, gender, review.rating, and previous.purchases
 ```
+
+### GAM Fit
+
+For GAMs we will make use of the library gam in RStudio, so the first thing that we have to do is to install this package by executing install.packages("gam") once. Then we load the library.
+
+```{r}
+library(gam)
+#library(mgcv)
+```
+
+The main function is gam(). Inside this function we can use any combination of non-linear and linear modelling of the various predictors. For, example below we use a smoothing spline for `Age`, `Review.Rating`, and `Previous.Purchases`, and a simple linear model for the variable `Gender`. We then plot the contributions of each predictor using the command plot(). As we can see, GAMs are very useful as they estimate the contribution of the effects of each predictor.
+
+```{r}
+gam = gam( Purchase.Amount..USD. ~ s(Age) + s(Review.Rating) + 
+                    s(Previous.Purchases) + Gender,
+                  data = shopping_trend )
+
+summary(gam)
+```
+
+```{r}
+par( mfrow = c(1,4) )
+plot( gam,  se = TRUE, col = "blue" )
+```
+
+Note that simply using `Gender` inside gam() is just fitting a linear model for this variables. However, one thing that we observe is that the `Gender` variable is binary as it only take the values of 0 and 1. This we can see from the x-axis of the `Gender` plot on the right above. So, it would be preferable to use a step function for this variable. In order to do this we have to change the variable to a factor. We first create a second object called shopping_trend1 (in order not to change the initial dataset shopping_trend) and then we use the command factor() to change the variable. Then we fit again the same model. As we can see below now gam() fits a step function for variable `Gender` which is more appropriate.
+
+
+```{r}
+shopping_trend1 = shopping_trend
+shopping_trend1$Gender = factor(shopping_trend1$Gender)
+
+gam1 = gam( Purchase.Amount..USD. ~ s(Age) + s(Review.Rating) + 
+              s(Previous.Purchases) + Gender, 
+            data = shopping_trend1 )
+summary(gam1)
+```
+
+```{r}
+par( mfrow = c(1,4) )
+plot( gam1,  se = TRUE, col = "blue" )
+```
+
+We can make predictions from gam objects, just like lm objects, using the predict() method for the class gam. Here we make predictions on some new data. Note that when assigning the value 0 to `Gender`, we enclose these values in "" since we informed R to treat  `Gender` as a categorical factor with two levels - "0" and "1".
+
+
+```{r}
+preds <- predict( gam1, 
+                  newdata = data.frame( Gender = "0", Previous.Purchases = 27,
+                                        Age = 30, Review.Rating = 3.8 )  )
+preds
+```
+
+### Linear Fit
+
+```{r}
+library(gam)
+linear_mod = gam( Purchase.Amount..USD. ~ Age + Review.Rating + 
+                    Previous.Purchases + Gender,
+                  data = shopping_trend1 )
+
+summary(linear_mod)
+```
+
+```{r}
+preds <- predict( linear_mod, 
+                  newdata = data.frame( Gender = "0", Previous.Purchases = 27,
+                                        Age = 30, Review.Rating = 3.8 )  )
+preds
+```
+
+
+### Model Comparison
+
+Now let's compare our regular regression fit to the GAM fit. The following shows how one can extract various measures of performance, and the subsequent table shows them gathered together.
+
+```{r}
+AIC(linear_mod)
+AIC(gam1)
+```
+ 
+```{r}
+anova(linear_mod, gam1, test="Chisq")
+```
+ The gam model in this case had not improved the model significantly.
 
 
 # GAM for Logistic Regression
