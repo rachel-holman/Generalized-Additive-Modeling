@@ -105,6 +105,9 @@ More disadvantages:
 # import data
 shopping_trend <- read.csv('shopping_trends_updated.csv')
 datatable(shopping_trend)
+
+# lets predict purchase.amount with age, gender, review.rating, and subscription.status
+# lets predict subscription.status with age, gender, review rating, and previous.purchases
 ```
 
 ```{r}
