@@ -141,6 +141,11 @@ num_corr_tb<- shopping_trend %>%
 datatable(cor(num_corr_tb))
 ```
 
+As the correlation table shown above, we did not see any strong correlation between these numeric variables.
+
+
+
+
 Next, to make the variables easier to compare and work with, we performed one-hot coding on all categorical variables - `Customer.ID`, `Gender`, `Item.Purchased`, `Category`, `Location`, `Size`, `Color`, `Season`, `Subscription.Status`, `Shipping.Type`, `Discount.Applied`, `Promo.Code.Used`, `Payment.Method`, and `Frequency.of.Purchases`.
 
 ```{r}
