@@ -105,7 +105,7 @@ Before we start performing GAM for linear regression, we loaded our dataset and 
 
 ```{r}
 # import data
-shopping_trend <- read.csv('/Users/ziqia/OneDrive/Desktop/Statistical Learning/project/shopping_trends_updated.csv')
+shopping_trend <- read.csv('shopping_trends_updated.csv')
 
 datatable(shopping_trend)
 ```
@@ -233,6 +233,8 @@ preds_gam_lin
 
 ### Linear Fit
 
+It is important to note that one can produce a simple linear regression fit using the `gam()` function by simply not transforming any of the variables with smoothing or non-linear equations. Below, I will generate a simple linear regression to comanre with the GAM linear fit above.
+
 ```{r}
 library(gam)
 # linear fit
@@ -243,12 +245,16 @@ linear_mod = gam( Purchase.Amount..USD. ~ Age + Review.Rating +
 summary(linear_mod)
 ```
 
+We note that none of the predictor variables are significant for this model, just like in the GAM fit.
+
 ```{r}
 preds_lin <- predict( linear_mod, 
                   newdata = data.frame( Gender = "0", Previous.Purchases = 27,
                                         Age = 30, Review.Rating = 3.8 )  )
 preds_lin
 ```
+
+The predicted purchase amount when using the simple linear regression is slightly higher than that found when using the GAM linear regression. 
 
 
 ### Model Comparison
@@ -260,10 +266,12 @@ AIC(linear_mod)
 AIC(gam1_lin)
 ```
  
+ The AIC values are vary similar with the GAM model having a slightly higher AIC indicating that in this case it may be better to use a simple linear regression. 
+ 
 ```{r}
 anova(linear_mod, gam1_lin, test="Chisq")
 ```
-With a p-value of 0.1562, the GAM model in this case had not improved the model significantly (p-value > 0.05).
+With a p-value of 0.1562, the anova test shows that the GAM model in this case had not improved the model significantly (p-value > 0.05).
 
 
 # GAM for Logistic Regression (Predicting Subsription Status)
