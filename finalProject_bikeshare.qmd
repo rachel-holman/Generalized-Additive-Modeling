@@ -263,6 +263,26 @@ anova(linear_mod, gam1_lin, test="Chisq")
 With a p-value much smaller than 0.05, the anova test shows that the GAM model in this case had significantly improved the model over using the simple linear regression.
 
 
+To see the difference between simple linear regression and GAM linear regression, I will produce a simpler example below using only windspeed as a predictor for bike count:
+
+```{r}
+lin_mod = gam( count ~ windspeed, data = bikes1 )
+gam_mod = gam( count ~ s(windspeed), data = bikes1 )
+
+predlm = predict(lin_mod)
+predgam = predict(gam_mod)
+
+ggplot(bikes1, aes(x=windspeed, y=count)) +
+  geom_point(alpha=0.2) +
+  geom_line(aes(y=predlm, color='SLR'), lwd=1.5) +
+  geom_line(aes(y=predgam, color='GAM LR'), lwd=1.5) +
+  scale_color_manual(name='Model', values=c("blue", "red"))
+```
+
+As we see in the plot above, a simple linear regression does not account for the non-linear trend in the data that the GAM model does adjust for. Using this simple model, the SLR would predict far more bikes being used in high windspeeds than the GAM model would. Additionally, the SLR model would under-predict the number of bikes used in mild wind climates. By modeling nonparametric effects, the GAM model is often a better fit for real data because predictors rarely have perfectly linear impacts. 
+
+
+
 # GAM for Logistic Regression (Predicting if it's holiday or not)
 
 For GAM for logistic regression model, we estimated the probability of whether it's being in a holiday or not with a smoothing parameters.
@@ -312,7 +332,7 @@ predicted_probability <- plogis(preds_gam_log)
 predicted_probability 
 ```
 
-With assigning the values 0.80 to `temperature`, 0.5 to`windspeed`, 70 to `count`, and 3 to `season`, the output on the log-odds scale is -3.059871, or probability of determining it's being in a holiday is 4.479323%. This indicates that the model predicts about 4.479 percent baseline chance of a positive outcome - being in a holiday.
+With assigning the values 0.80 to `temperature`, 0.5 to`windspeed`, 70 to `count`, and 3 to `season`(summer), the output on the log-odds scale is -3.059871, or probability of determining it's being in a holiday is 4.479323%. This indicates that the model predicts about 4.479 percent baseline chance of a positive outcome - being in a holiday.
 
 
 ### Logistic Fit
