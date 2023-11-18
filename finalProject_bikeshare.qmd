@@ -389,4 +389,49 @@ anova(log_mod, gam_log, test="Chisq")
 With a p-value much smaller than 0.05, the anova test shows that the GAM model with smoothing parameters in this case had significantly improved the model over using the simple logistic regression. In addition, although both logistic regression models could not capture a great amount of probability over whether it's being in a holiday or not, using GAM model with smoothing parameters would have some improvement on our response variable.
 
 # GAM vs. GLM
+[what is glm]
+[insert text explaining difference between gam and glm]
+
+## GLM for Linear Regression
+```{r}
+glm_lin = glm( count ~ temperature + windspeed + 
+                    workingday + season,
+                  data = bikes, family=poisson)
+
+summary(glm_lin)
+```
+```{r}
+preds_glm <- predict(glm_lin, 
+                  newdata = data.frame( temperature = 0.40, windspeed = 0.5,
+                                        workingday = 1, season = 1))
+preds_glm
+```
+
+```{r}
+AIC(glm_lin)
+```
+
+```{r}
+anova(glm_lin, gam1_lin, test="Chisq") ##maybe something else
+```
+```{r}
+glm_mod = glm( count ~ windspeed, data = bikes1 )
+gam_mod = gam( count ~ s(windspeed), data = bikes1 )
+
+predglm = predict(glm_mod)
+predgam = predict(gam_mod)
+
+ggplot(bikes1, aes(x=windspeed, y=count)) +
+  geom_point(alpha=0.2) +
+  geom_line(aes(y=predglm, color='GLM'), lwd=1.5) +
+  geom_line(aes(y=predgam, color='GAM LR'), lwd=1.5) +
+  scale_color_manual(name='Model', values=c("blue", "red"))
+gam_mod = gam( count ~ s(windspeed), data = bikes1 )
+```
+
+## GLM for Logisitic Regression
+```{r}
+
+```
+
 
