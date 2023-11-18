@@ -109,7 +109,9 @@ More disadvantages:
 
 # R and Python packages for GAMs
 
-*Documentation goes here*
+Documentation for GAM in R: https://www.rdocumentation.org/packages/mgcv/versions/1.9-0/topics/gam
+Documentation for GAM in Python: https://pygam.readthedocs.io/en/latest/ 
+
 
 # Data Cleaning and EDA
 
@@ -431,7 +433,31 @@ gam_mod = gam( count ~ s(windspeed), data = bikes1 )
 
 ## GLM for Logisitic Regression
 ```{r}
+glm_log = glm( holiday ~ temperature + windspeed + 
+                    count + season,
+                  data = bikes2, family=binomial)
 
+summary(glm_log)
 ```
 
+```{r}
+preds_glm_log <- predict( glm_log, 
+                  newdata = data.frame( temperature = 0.80, windspeed = 0.5,
+                                        count = 70, season = '3'  )  )
+# log-odd
+preds_glm_log
+```
+```{r}
+# probability
+predicted_probability <- plogis(preds_glm_log)
+predicted_probability 
+```
+
+```{r}
+AIC(glm_log)
+```
+```{r}
+anova(glm_log, gam_log, test="Chisq")
+
+```
 
