@@ -391,8 +391,22 @@ anova(log_mod, gam_log, test="Chisq")
 With a p-value much smaller than 0.05, the anova test shows that the GAM model with smoothing parameters in this case had significantly improved the model over using the simple logistic regression. In addition, although both logistic regression models could not capture a great amount of probability over whether it's being in a holiday or not, using GAM model with smoothing parameters would have some improvement on our response variable.
 
 # GAM vs. GLM
-[what is glm]
-[insert text explaining difference between gam and glm]
+GLMs, or Generalized Linear Models, are a class of statistical models that extend ordinary linear models to handle various types of data distributions and relationships by using link functions and specific error distributions. They're versatile, accommodating regression and classification problems, but assume a linear relationship between predictors and the response variable on a transformed scale. On the other hand, GAMs, or Generalized Additive Models, take this further by allowing for non-linear relationships between predictors and responses using smoothing functions like splines. GAMs offer more flexibility when the relationships between variables are complex and not adequately captured by a linear model, allowing for a better fit in such scenarios. Ultimately, the choice between GLMs and GAMs depends on the complexity of the relationship one seeks to model in the data.
+
+Key components of GLMs include:
+
+1. Linear Predictor: Similar to linear regression, GLMs use a linear combination of predictors (independent variables) to model the relationship with the dependent variable. However, GLMs can handle more than just continuous outcomes; they can work with binary, count, or other non-normally distributed data.
+
+2. Link Function: GLMs introduce a link function that connects the linear predictor to the response variable. This link function is used to model the relationship between the expected value of the response variable and the linear predictor.
+
+3. Error Distribution: GLMs allow for different types of error distributions beyond the normal distribution used in simple linear regression. These could include the Poisson distribution for count data, binomial distribution for binary outcomes, or gamma distribution for continuous positive outcomes.
+
+Common examples of GLMs include:
+
+Linear Regression: When the response variable is continuous and normally distributed.
+Logistic Regression: Used for binary classification problems where the response variable is categorical (typically binary).
+Poisson Regression: Suitable for count data, where the response variable represents counts of events occurring in a fixed interval of time or space.
+
 
 ## GLM for Linear Regression
 ```{r}
@@ -402,16 +416,19 @@ glm_lin = glm( count ~ temperature + windspeed +
 
 summary(glm_lin)
 ```
+The summary above shows that all the predcitors are significant with p-values <0.05. 
 ```{r}
 preds_glm <- predict(glm_lin, 
                   newdata = data.frame( temperature = 0.40, windspeed = 0.5,
                                         workingday = 1, season = 1))
 preds_glm
 ```
+Above, we see that the GLM model predicts that on a working winter day with a temperature of 51 degrees Fahrenheit and a normalized windspeed of 0.5, there will be 5 bikes used. This prediction differs greatly from the prediction obtained using the GAM model. 
 
 ```{r}
 AIC(glm_lin)
 ```
+The GAM model has a lower AIC, indiating that in this case it may be better to use GAM models. 
 
 ```{r}
 anova(glm_lin, gam1_lin, test="Chisq") ##maybe something else
@@ -430,6 +447,7 @@ ggplot(bikes1, aes(x=windspeed, y=count)) +
   scale_color_manual(name='Model', values=c("blue", "red"))
 gam_mod = gam( count ~ s(windspeed), data = bikes1 )
 ```
+As we see in the plot above, a GLM regression does not account for the non-linear trend in the data that the GAM model does adjust for. 
 
 ## GLM for Logisitic Regression
 ```{r}
@@ -439,7 +457,7 @@ glm_log = glm( holiday ~ temperature + windspeed +
 
 summary(glm_log)
 ```
-
+All predictors have a significant effect on determining probability of whether it’s being in a holiday or not, as all p-values are less than 0.05.
 ```{r}
 preds_glm_log <- predict( glm_log, 
                   newdata = data.frame( temperature = 0.80, windspeed = 0.5,
@@ -447,17 +465,21 @@ preds_glm_log <- predict( glm_log,
 # log-odd
 preds_glm_log
 ```
+
 ```{r}
 # probability
 predicted_probability <- plogis(preds_glm_log)
 predicted_probability 
 ```
 
+With assigning the values 0.80 to temperature, 0.5 to windspeed, 70 to count, and 3 to season(summer), the output on the log-odds scale is -3.49445, or probability of being in a holiday is 2.947055%. This indicates that the model predicts about 2.947 percent baseline chance of a positive outcome - being in a holiday. This prediction is smaller than the predictoin obtained using a GAM model
 ```{r}
 AIC(glm_log)
 ```
+The AIC value are similar, indicating using either GAM or GLM for modeling may be appropriate.
+
 ```{r}
 anova(glm_log, gam_log, test="Chisq")
 
 ```
-
+With a p-value much smaller than 0.05, the anova test shows that the GAM model with smoothing parameters in this case had significantly improved the model over using the GLM model.
