@@ -395,17 +395,17 @@ GLMs, or Generalized Linear Models, are a class of statistical models that exten
 
 Key components of GLMs include:
 
-1. Linear Predictor: Similar to linear regression, GLMs use a linear combination of predictors (independent variables) to model the relationship with the dependent variable. However, GLMs can handle more than just continuous outcomes; they can work with binary, count, or other non-normally distributed data.
+1. **Linear Predictor**: Similar to linear regression, GLMs use a linear combination of predictors (independent variables) to model the relationship with the dependent variable. However, GLMs can handle more than just continuous outcomes; they can work with binary, count, or other non-normally distributed data.
 
-2. Link Function: GLMs introduce a link function that connects the linear predictor to the response variable. This link function is used to model the relationship between the expected value of the response variable and the linear predictor.
+2. **Link Function**: GLMs introduce a link function that connects the linear predictor to the response variable. This link function is used to model the relationship between the expected value of the response variable and the linear predictor.
 
-3. Error Distribution: GLMs allow for different types of error distributions beyond the normal distribution used in simple linear regression. These could include the Poisson distribution for count data, binomial distribution for binary outcomes, or gamma distribution for continuous positive outcomes.
+3. **Error Distribution**: GLMs allow for different types of error distributions beyond the normal distribution used in simple linear regression. These could include the Poisson distribution for count data, binomial distribution for binary outcomes, or gamma distribution for continuous positive outcomes.
 
 Common examples of GLMs include:
 
-Linear Regression: When the response variable is continuous and normally distributed.
-Logistic Regression: Used for binary classification problems where the response variable is categorical (typically binary).
-Poisson Regression: Suitable for count data, where the response variable represents counts of events occurring in a fixed interval of time or space.
+**Linear Regression**: When the response variable is continuous and normally distributed.
+**Logistic Regression**: Used for binary classification problems where the response variable is categorical (typically binary). \n
+**Poisson Regression**: Suitable for count data, where the response variable represents counts of events occurring in a fixed interval of time or space.
 
 
 ## GLM for Linear Regression
@@ -476,7 +476,7 @@ With assigning the values 0.80 to temperature, 0.5 to windspeed, 70 to count, an
 ```{r}
 AIC(glm_log)
 ```
-The AIC value are similar, indicating using either GAM or GLM for modeling may be appropriate.
+The AIC values are similar, indicating using either GAM or GLM for modeling may be appropriate.
 
 ```{r}
 anova(glm_log, gam_log, test="Chisq")
