@@ -18,6 +18,8 @@ library(dplyr)
 library(GGally)
 library(kableExtra)
 library(DT)
+library(pROC)
+library(caret)
 ```
 
 # Introduction to Generalized Additive Models (GAM)
@@ -27,7 +29,6 @@ Bike-sharing systems represent a contemporary evolution in rental services, auto
 With this distinctive feature transformation in bike-sharing systems and the intricate patterns of city mobility, one of our goals is to conduct linear and logistic Generalized Addictive Models (GAM) and uncover valuable insights and predict the daily demand for bikes and detect the probability of a given day being a holiday. 
 
 Based on the available information, it is known that GLMs expand linear models for diverse data relationships, assuming linearity on a transformed scale. In contrast, GAMs allow non-linear connections, offering more flexibility for intricate relationships. Hence, with our second goal, we aim to compare and test both advantages and disadvantages of GAMs with and without smoothing parameters. 
-
 
 Bike sharing has become a convenient mode of transportation in urban areas and in university towns, such as, Charlottesville. The data came from Fanaee-T and is available on the [UCI ML web site](https://archive.ics.uci.edu/dataset/275/bike+sharing+dataset) or at [this github link](https://github.com/BayesianModelingandComputationInPython/BookCode_Edition1/blob/main/data/bikes_hour.csv).
 
@@ -77,11 +78,11 @@ This dataset contains the hourly and daily count of rental bikes between years 2
 - `count`: count of total rental bikes including both casual and registered
 
 
-# Specialty of GAM:
+# Specialty of GAM
 
-GAMs could be used on datasets that consist of predictors that are associated with the outcome variable and the response variable. GAMs are just as versatile as the GLMs because they can be used to model both numeric and categorical response variables. However, GAMs could also be applied to model features that have nonlinear relationship with the response variable. 
+GAMs could be used on datasets that consist of predictors that are associated with the outcome variable and the response variable. GAMs are just as versatile as the GLMs because they can be used to model both numeric and categorical response variables. However, GAMs could also be applied to model features that have nonlinear relationship with the response variable.
 
-# Advantages and Disadvantages:
+# Advantages and Disadvantages
 
 The primary advantage of GAM is its ability to model highly complex nonlinear relationships when the number of potential predictors is large. The main disadvantage of GAM is its computational complexity; like other nonparametric methods, GAM has a high propensity for overfitting. The table below shows a clear outline of the biggest advantages and disadvantages of GAM. 
 
@@ -97,9 +98,9 @@ The primary advantage of GAM is its ability to model highly complex nonlinear re
 
 
 # R and Python packages for GAMs
+[Documentation for GAM in R](https://www.rdocumentation.org/packages/mgcv/versions/1.9-0/topics/gam)
 
-Documentation for GAM in R: <https://www.rdocumentation.org/packages/mgcv/versions/1.9-0/topics/gam>
-Documentation for GAM in Python: <https://pygam.readthedocs.io/en/latest/>
+[Documentation for GAM in Python](https://pygam.readthedocs.io/en/latest/)
 
 
 # Data Cleaning
@@ -345,20 +346,6 @@ legend("bottomright", legend = paste("AUC =", round(auc_value, 2)), col = "blue"
 
 The GAM model has a AUC value of 0.65, which is higher than 0.5. Hence, it indicates that this GAM model is better than random choice.
 
-```{r}
-
-# convert predicted probabilities to binary predictions (0 or 1)
-predicted_classes <- ifelse(pred_probs > 0.05, 1, 0)
-
-# confusion matrix
-confusion_matrix <- table(Actual = bikes2$holiday, Predicted = predicted_classes)
-
-confusion_matrix
-
-```
-
-By having an initial threshold with 0.5 in GAM, the confusion matrix showed respective components of True Negatives (TN) with 16879, False Positives (FP) with 0, False Negatives (FN) with 500, and True Positives (TP) with 0, so it was determined that the threshold was too high. Hence, a new threshold, 0.05, was picked. Although the positive class (1) is underrepresented, and it leads to a situation where TP is relatively small, the updated confusion matrix is slightly improved.
-
 
 
 ### Logistic Fit
@@ -417,6 +404,20 @@ legend("bottomright", legend = paste("AUC =", round(auc_value_log, 2)), col = "g
 In contrast, this simple logistic regression model that does not have transformation with any of the variables with smoothing or non-linear has a AUC value of 0.59, which is slightly higher than 0.5, but it has a lower ability of to distinguish between the classes. Hence, it indicates that the model is no better than random chance.
 
 
+```{r}
+
+# convert predicted probabilities to binary predictions (0 or 1)
+predicted_classes <- ifelse(pred_probs > 0.05, 1, 0)
+
+# confusion matrix
+confusion_matrix <- table(Actual = bikes2$holiday, Predicted = predicted_classes)
+
+confusion_matrix
+
+```
+
+By having an initial threshold with 0.5 in GAM, the confusion matrix showed respective components of True Negatives (TN) with 16879, False Positives (FP) with 0, False Negatives (FN) with 500, and True Positives (TP) with 0, so it was determined that the threshold was too high. Hence, a new threshold, 0.05, was picked. Although the positive class (1) is underrepresented, and it leads to a situation where TP is relatively small, the updated confusion matrix is slightly improved.
+
 
 ### Model Comparison
 
@@ -438,7 +439,17 @@ With a p-value much smaller than 0.05, the anova test shows that the GAM model w
 
 # GAM vs. GLM
 
-GLMs, or Generalized Linear Models, are a class of statistical models that extend ordinary linear models to handle various types of data distributions and relationships by using link functions and specific error distributions. They're versatile, accommodating regression and classification problems, but assume a linear relationship between predictors and the response variable on a transformed scale. On the other hand, GAMs, or Generalized Additive Models, take this further by allowing for non-linear relationships between predictors and responses using smoothing functions like splines. GAMs offer more flexibility when the relationships between variables are complex and not adequately captured by a linear model, allowing for a better fit in such scenarios. Ultimately, the choice between GLMs and GAMs depends on the complexity of the relationship one seeks to model in the data.
+GLMs, or generalized linear models, are a class of statistical models that extend ordinary linear models to handle various types of data distributions and relationships by using link functions and specific error distributions. They're versatile, accommodating regression and classification problems, but assume a linear relationship between predictors and the response variable on a transformed scale. On the other hand, GAMs, or generalized additive models, take this further by allowing for non-linear relationships between predictors and responses using smoothing functions like splines. GAMs offer more flexibility when the relationships between variables are complex and not adequately captured by a linear model, allowing for a better fit in such scenarios. Ultimately, the choice between GLMs and GAMs depends on the complexity of the relationship one seeks to model in the data.
+
+Mathematical Representation of GAM:
+$$
+g(E[y|x]) = \beta_0 + f_1(x_1) + ... + f_p(x_p)
+$$
+
+Mathematical Representation of GLM:
+$$
+g(E[y|x]) = \beta_0 + \beta_1x_1 + ... + \beta_px_p
+$$
 
 Key components of GLMs include:
 
@@ -451,7 +462,9 @@ Key components of GLMs include:
 Common examples of GLMs include:
 
 **Linear Regression**: When the response variable is continuous and normally distributed.
-**Logistic Regression**: Used for binary classification problems where the response variable is categorical (typically binary). \n
+
+**Logistic Regression**: Used for binary classification problems where the response variable is categorical (typically binary).
+
 **Poisson Regression**: Suitable for count data, where the response variable represents counts of events occurring in a fixed interval of time or space.
 
 
@@ -541,7 +554,56 @@ anova(glm_log, gam_log, test="Chisq")
 
 With a p-value much smaller than 0.05, the anova test shows that the GAM model with smoothing parameters in this case had significantly improved the model over using the GLM model.
 
+```{r}
+# predicted probabilities
+predict_prob_glm <- predict(glm_log, type = "response")
+
+# ROC curve
+roc_curve <- roc(bikes2$holiday, predict_prob_glm)
+```
+
+```{r}
+# plot ROC curve
+plot(roc_curve, main = "GLM Logistic Fit ROC Curve", col = "blue", lwd = 2)
+# add AUC to the plot
+auc_value <- auc(roc_curve)
+legend("bottomright", legend = paste("AUC =", round(auc_value, 2)), col = "blue", lty = 1, cex = 0.8)
+```
+The GLM model has a AUC value of 0.59, which is higher than 0.5. Hence, it indicates that this GLM model is better than random choice. 
+
+```{r}
+# Assuming 'actual_values' contains the actual 'holiday' values for the test data
+
+# Function to convert probabilities to binary predictions
+convert_to_binary <- function(probabilities, threshold = 0.05) {
+  predictions <- ifelse(probabilities >= threshold, 1, 0)
+  return(predictions)
+}
+
+# Make predictions using the logistic regression model
+preds_glm_log <- predict(glm_log, 
+                         type = "response")
+
+# Convert predicted probabilities to binary predictions (0 or 1)
+binary_preds <- convert_to_binary(preds_glm_log)
+
+# Assuming 'actual_values' contains the actual 'holiday' values for the test data
+# Replace 'actual_values' with the actual values from your dataset
+
+# Create a confusion matrix
+conf_matrix <- table(Actual = bikes2$holiday, Predicted = binary_preds)
+
+# Display the confusion matrix
+print(conf_matrix)
+```
+Although the threshold was set at 0.05, the GLM logistic model did not show any True Positives (TP). Conversely, the GAM logistic model displayed TP at the same threshold, indicating that the GAM model may be better suited for this particular dataset. 
 
 # Final Thoughts
 
-**Let's add a conclusion here!**
+In conclusion, this report has delved into the application of generalized additive models (GAMs) in the context of linear regression and logistic regression, providing a comprehensive exploration of their capabilities and a comparative analysis against generalized linear models (GLMs). The findings and insights derived from this study highlight several key points that contribute to the understanding of the efficacy of GAMs in various regression tasks.
+
+Firstly, the flexibility of GAMs in capturing complex non-linear relationships was evident throughout the analysis. The ability to incorporate smooth functions of predictors allows GAMs to adapt to intricate data patterns, providing a more nuanced representation of relationships compared to the linearity assumptions in traditional GLMs. This flexibility is particularly valuable when dealing with datasets where relationships are not easily characterized by linear models. Moreover, the comparison against GLMs revealed that GAMs outperformed in scenarios with non-linear dependencies. The improved predictive accuracy of GAMs showcase their advantage in capturing the inherent complexities present in real-world datasets. 
+
+However, it is crucial to acknowledge the trade-offs associated with the increased flexibility of GAMs. The interpretability of the model can be compromised, and careful consideration is required in selecting the appropriate smoothing functions to avoid overfitting. Furthermore, the potential increase in model complexity demands thoughtful validation procedures to ensure the generalizability of the model to new data.
+
+In summary, the application of generalized ddditive models has demonstrated their efficacy in capturing non-linear relationships in both linear regression and logistic regression scenarios. The comparison against Generalized Linear Models reveals the significance of employing GAMs when dealing with complex, non-linear dependencies. As with any modeling approach, a nuanced understanding of the data and thoughtful consideration of model complexities are essential for maximizing the benefits of GAMs in regression tasks. The findings presented here contribute to the growing body of knowledge on advanced regression techniques, offering practitioners valuable insights into the utility of GAMs in capturing the intricacies of real-world data.
