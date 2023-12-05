@@ -1,0 +1,609 @@
+---
+title: "Final Project: Generalized Additive Models (GAM)" 
+author: "**Rachel Holman, Grace Zhang, Rose E.M.**"
+format: ds6030hw-html
+---
+
+```{r config, include=FALSE}
+# Set global configurations and settings here
+knitr::opts_chunk$set()                 # set global chunk options
+ggplot2::theme_set(ggplot2::theme_bw()) # set ggplot2 theme
+```
+
+```{r packages, message=FALSE, warning=FALSE}
+library(tidyverse)    # functions for data manipulation  
+library(ggplot2)
+library(MASS)
+library(dplyr)
+library(GGally)
+library(kableExtra)
+library(DT)
+library(pROC)
+library(caret)
+```
+
+# Introduction to Generalized Additive Models (GAM)
+
+Bike-sharing systems represent a contemporary evolution in rental services, automating membership processes and offering users the convenience to pick up and return bikes at their convenience. With over 500 programs worldwide and a fleet exceeding half a million bicycles, these systems have garnered widespread attention for their impact on traffic, environmental sustainability, and public health.
+
+With this distinctive feature transformation in bike-sharing systems and the intricate patterns of city mobility, one of our goals is to conduct linear and logistic Generalized Addictive Models (GAM) and uncover valuable insights and predict the daily demand for bikes and detect the probability of a given day being a holiday. 
+
+Based on the available information, it is known that GLMs expand linear models for diverse data relationships, assuming linearity on a transformed scale. In contrast, GAMs allow non-linear connections, offering more flexibility for intricate relationships. Hence, with our second goal, we aim to compare and test both advantages and disadvantages of GAMs with and without smoothing parameters. 
+
+Bike sharing has become a convenient mode of transportation in urban areas and in university towns, such as, Charlottesville. The data came from Fanaee-T and is available on the [UCI ML web site](https://archive.ics.uci.edu/dataset/275/bike+sharing+dataset) or at [this github link](https://github.com/BayesianModelingandComputationInPython/BookCode_Edition1/blob/main/data/bikes_hour.csv).
+
+This dataset contains the hourly and daily count of rental bikes between years 2011 and 2012 in Capital bikeshare system with the corresponding weather and seasonal information.
+
+- `instant`: record index
+
+- `dteday` : date
+
+- `season` : season (1:winter, 2:spring, 3:summer, 4:fall)
+
+- `yr` : year (0: 2011, 1:2012)
+
+- `mnth` : month ( 1 to 12)
+
+- `hr` : hour (0 to 23)
+
+- `holiday` : weather day is holiday or not (extracted from http://dchr.dc.gov/page/holiday-schedule)
+
+- `weekday` : day of the week
+
+- `workingday` : if day is neither weekend nor holiday is 1, otherwise is 0.
+
+- `weathersit` : 
+
+		- 1: Clear, Few clouds, Partly cloudy, Partly cloudy
+		
+		- 2: Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist
+		
+		- 3: Light Snow, Light Rain + Thunderstorm + Scattered clouds, Light Rain + Scattered clouds
+		
+		- 4: Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog
+    
+    
+- `temperature` : Normalized temperature in Celsius. The values are derived via (t-t_min)/(t_max-t_min), t_min=-8, t_max=+39 (only in hourly scale)
+
+- `atemp`: Normalized feeling temperature in Celsius. The values are derived via (t-t_min)/(t_max-t_min), t_min=-16, t_max=+50 (only in hourly scale)
+
+- `humidity`: Normalized humidity. The values are divided to 100 (max)
+
+- `windspeed`: Normalized wind speed. The values are divided to 67 (max)
+
+- `casual`: count of casual users
+
+- `registered`: count of registered users
+
+- `count`: count of total rental bikes including both casual and registered
+
+
+# Specialty of GAM
+
+GAMs could be used on datasets that consist of predictors that are associated with the outcome variable and the response variable. GAMs are just as versatile as the GLMs because they can be used to model both numeric and categorical response variables. However, GAMs could also be applied to model features that have nonlinear relationship with the response variable.
+
+# Advantages and Disadvantages
+
+The primary advantage of GAM is its ability to model highly complex nonlinear relationships when the number of potential predictors is large. The main disadvantage of GAM is its computational complexity; like other nonparametric methods, GAM has a high propensity for overfitting. The table below shows a clear outline of the biggest advantages and disadvantages of GAM. 
+
+|     | Advantages of GAMs                                                                                                                           | Disadvantages of GAMs                                                                                                                                                                  |
+|-------------|-------------------------|----------------------------------|
+| 1\. | **Flexibility:** GAMs can model various relationships, including non-linear and complex patterns.                                            | **Complexity:** GAMs can become computationally intensive for large datasets or high-dimensional problems.                                                                             |
+| 2\. | **Interpretability:** They provide interpretable results, making understanding the relationships between predictors and the response easier. | **Data Requirements:** GAMs may require larger sample sizes to capture non-linear patterns effectively.                                                                                |
+| 3\. | **Non-linearity:** GAMs can capture intricate, non-linear relationships that traditional linear models cannot represent.                     | **Sensitivity to Smoothing Parameters:** The choice of smoothing parameters can impact model results, requiring careful tuning.                                                        |
+| 4\. | **Regularization:** GAMs can incorporate regularization techniques to prevent overfitting and improve generalization.                        | **Does not natively handle missing values.** GAMs require the user to select a method to handle missing data. The default option is to drop NA rows.                                                                                     |
+| 5\. | **Visualization:** The smooth functions in GAMs can be visually represented, aiding in model interpretation.                                 | **Limited to Regression and Classification:** GAMs are primarily suited for regression and classification tasks and may not be suitable for more complex tasks like image recognition. |
+| 6\. | **Insensitive to Outliers:** GAM outliers do not have as strong of a global influence even if they have a local influence on fit.            | **Wider confidence intervals and less powerful tests.** As a tradeoff for the high flexibility, GAMs generally have wider confidence intervals than simpler models.                    |
+
+
+
+# R and Python packages for GAMs
+[Documentation for GAM in R](https://www.rdocumentation.org/packages/mgcv/versions/1.9-0/topics/gam)
+
+[Documentation for GAM in Python](https://pygam.readthedocs.io/en/latest/)
+
+
+# Data Cleaning
+
+Before we start performing GAM for linear regression, we loaded our dataset and checked if there are any missing values, abnormal zeros, and NAs in the dataset.
+
+```{r}
+# import data
+bikes <- read.csv('bikes_hour.csv')
+datatable(bikes)
+```
+
+```{r}
+#data type of variables
+str(bikes)
+```
+
+```{r}
+# check NAs
+colSums(is.na(bikes))
+```
+
+```{r}
+# check zeros
+colSums(bikes == 0, na.rm = TRUE)
+```
+
+Then, we ran a quick exploratory data analysis by computing the correlation between all numeric variables that do not classified with levels - `yr`, `mnth`, 'hour', 'weathersit', ''temperature', 'atemp', 'humidity', 'windspeed' 'casual', 'count'.
+
+```{r}
+# correlation between numeric variables
+num_corr_tb<- bikes %>% 
+  #include dplyr::, otherwise dplyr would clash with MASS package
+  dplyr::select(-season, -dteday, -instant, -holiday, -weekday,
+                -workingday, -registered)
+
+ 
+#num_corr_tb 
+datatable(cor(num_corr_tb))
+```
+
+As the correlation table shown above, we did not see any strong correlation between these numeric variables.
+
+
+
+# GAM for Linear Regression (Predicting The Count of Bikes Rented)
+
+### GAM Fit
+
+For GAMs we would make use of the library gam in RStudio, so the first thing that we have to do is to install this package by executing install.packages("gam") once. Then we load the library.
+
+```{r}
+library(gam)
+#library(mgcv)
+```
+
+The main function is gam(). Inside this function we can use any combination of non-linear and linear modelling of the various predictors. For example below we use a smoothing spline for `temperature` and `windspeed`, and a simple linear model for the categorical variables `workingday` and `season`. We then plot the contributions of each predictor using the command plot(). As we can see, GAMs are very useful as they estimate the contribution of the effects of each predictor.
+
+```{r}
+# fit the GAM model for linear regression
+gam_lin = gam( count ~ s(temperature) + s(windspeed) + 
+                    workingday + season,
+                  data = bikes )
+
+summary(gam_lin)
+```
+
+The summary above shows that the parametric effects of `temperature`, `windspeed`, and `season` all are significant redictors with p-values <0.05. Additionally, the nonparametric effects of `temperature` and `windspeed` are significant predictors which shows there is benefit to modeling these non-linearly with the smoothing.
+
+
+```{r}
+par( mfrow = c(1,4) )
+plot( gam_lin,  se = TRUE, col = "blue" )
+```
+
+Note that simply using `workingday` and `season` inside gam() is just fitting a linear model for this variables. However, we observe that the `workingday` variable is binary as it only take the values of 0 and 1, and the `season` variable is categorical with values 1-4 representing each of the four seasons. This we can see from the x-axis of the `workingday` and `season` plots on the right above. So, it would be preferable to use a step function for these variables. In order to do this we have to change the variables to factors. We first create a second object called bikes1 (in order not to change the initial dataset bikes) and then we use the command factor() to change the variables. Then we fit again the same model. As we can see below now gam() fits a step function for variables `workingday` and `season` which is more appropriate.
+
+
+```{r}
+# convert Gender to factor
+bikes1 = bikes
+bikes1$workingday = factor(bikes1$workingday)
+bikes1$season = factor(bikes1$season)
+
+# fit the GAM model for linear regression with updated Gender(factorized)
+gam1_lin = gam( count ~ s(temperature) + s(windspeed) + 
+                    workingday + season,
+                  data = bikes1 )
+summary(gam1_lin)
+```
+
+The significance of the predictor variables did not change from the factroization of `workingday` and `season`, but the plots below are now looking much better and we can more easily see the difference in effect of each season specifically.
+
+```{r}
+par( mfrow = c(1,4) )
+plot( gam1_lin,  se = TRUE, col = "blue" )
+```
+
+We can make predictions from gam objects, just like lm objects, using the predict() method for the class gam. Here we make predictions on some new data. Note that when assigning the value 1 to `workingday` and 3 to `season`, we enclose these values in "" since we informed R to treat `workingday` and `season` as a categorical factors with four levels.
+
+
+```{r}
+preds_gam_lin <- predict( gam1_lin, 
+                  newdata = data.frame( temperature = 0.40, windspeed = 0.5,
+                                        workingday = '1', season = '1' )  )
+preds_gam_lin
+```
+
+Above, we see that the GAM model predicts that on a working winter day with a temperature of 51 degrees Fahrenheit and a normalized windspeed of 0.5, there will be 172 bikes used.
+
+### Linear Fit
+
+It is important to note that one can produce a simple linear regression fit using the `gam()` function by simply not transforming any of the variables with smoothing or non-linear equations. Below, we generated a simple linear regression to compare with the GAM linear fit above.
+
+```{r}
+library(gam)
+# linear fit
+linear_mod = gam( count ~ temperature + windspeed + 
+                    workingday + season,
+                  data = bikes1 )
+
+summary(linear_mod)
+```
+
+We note that the same predictor variables are significant for this model as are in the GAM fit. Workingday is not found to be significant with all the other variables in the model.
+
+```{r}
+preds_lin <- predict( linear_mod, 
+                  newdata = data.frame( temperature = 0.40, windspeed = 0.5,
+                                        workingday = '1', season = '1' )   )
+preds_lin
+```
+
+The predicted number of bikes used on a day with the same conditions as above is much higher when using the simple linear regression than that found when using the GAM linear regression. 
+
+
+### Model Comparison
+
+Now let's compare our regular regression fit to the GAM fit with smoothing terms. The following shows how one can extract various measures of performance, and the subsequent table shows them gathered together.
+
+```{r}
+AIC(linear_mod)
+AIC(gam1_lin)
+```
+ 
+The AIC values are fairly similar, but the GAM model has a lower AIC indicating that in this case it may be better to use than the simple linear regression. 
+ 
+```{r}
+anova(linear_mod, gam1_lin, test="Chisq")
+```
+With a p-value much smaller than 0.05, the anova test shows that the GAM model in this case had significantly improved the model over using the simple linear regression.
+
+
+To see the difference between simple linear regression and GAM linear regression, I will produce a simpler example below using only windspeed as a predictor for bike count:
+
+```{r}
+lin_mod = gam( count ~ windspeed, data = bikes1 )
+gam_mod = gam( count ~ s(windspeed), data = bikes1 )
+
+predlm = predict(lin_mod)
+predgam = predict(gam_mod)
+
+ggplot(bikes1, aes(x=windspeed, y=count)) +
+  geom_point(alpha=0.2) +
+  geom_line(aes(y=predlm, color='SLR'), lwd=1.5) +
+  geom_line(aes(y=predgam, color='GAM LR'), lwd=1.5) +
+  scale_color_manual(name='Model', values=c("blue", "red"))
+```
+
+As we see in the plot above, a simple linear regression does not account for the non-linear trend in the data that the GAM model does adjust for. Using this simple model, the SLR would predict far more bikes being used in high windspeeds than the GAM model would. Additionally, the SLR model would under-predict the number of bikes used in mild wind climates. By modeling nonparametric effects, the GAM model is often a better fit for real data because predictors rarely have perfectly linear impacts. 
+
+
+
+# GAM for Logistic Regression (Predicting Holiday or Not)
+
+For GAM for logistic regression model, we estimated the probability of whether it's being in a holiday or not with a smoothing parameters.
+
+
+Likewise, as we noticed earlier - in the GAM model for linear regression - that the `holiday`, 'workingday' and `season` variables are categoriacal variables. So, it would be preferable to use a step function for this variable. In order to do this we have to change the variable to a factor. We first create a second object called `bikes2` (in order not to change the initial dataset `bikes`) and then we use the command factor() to change these three variables. Then we fit GAM model for logistic regression. As we can see below now gam() fits a step function for all three variables - `holiday`, 'workingday' and `season` - which is more appropriate.
+
+```{r}
+## factor holiday, workingday, and season into categorical variables with levels
+bikes2 = bikes
+bikes2$holiday = factor(bikes$holiday)
+bikes2$workingday = factor(bikes2$workingday)
+bikes2$season = factor(bikes2$season)
+
+# fit the GAM model for logistic regression
+gam_log = gam( holiday ~ s(temperature) + s(windspeed) + 
+                    s(count) + season,
+                  data = bikes2 , family = binomial)
+
+summary(gam_log)
+```
+
+According to the statistical outcome above, it is found that `temperature`, `count`, and 'season' variables have a significant effect on determining probability of whether it's being in a holiday or not, as all p-values are less than 0.05.
+
+
+```{r}
+par( mfrow = c(1,4) )
+plot( gam_log,  se = TRUE, col = "blue" )
+```
+
+Based on the plots shown above, while `windspeed` does not have significant effect on determining probability of whether it's being in a holiday or not, the partial spans from `windspeed` on the y-axis is the largest within these three numeric variables, which implies there is more flexibility and more complex relationship between the predictor and the response.
+
+
+Now, we can make predictions from gam objects by using the predict() method for the class gam. Here we make predictions on some new data. Note that when assigning the values 0.80 to `temperature`, 0.5 to`windspeed`, 70 to `count`, and 3 to `season`, where `season` is treated as a categorical factor with four levels - "1", "2", "3", and "4".
+
+
+```{r}
+# prediction with GAM smoothing terms for logistic regression
+preds_gam_log <- predict( gam_log, 
+                  newdata = data.frame( temperature = 0.80, windspeed = 0.5,
+                                        count = 70, season = '3'  )  )
+# log-odd
+preds_gam_log
+
+# probability
+predicted_probability <- plogis(preds_gam_log)
+predicted_probability 
+```
+
+With assigning the values 0.80 to `temperature`, 0.5 to`windspeed`, 70 to `count`, and 3 to `season`(summer), the output on the log-odds scale is -3.059871, or probability of determining it's being in a holiday is 4.479323%. This indicates that the model predicts about 4.479 percent baseline chance of a positive outcome - being in a holiday.
+
+
+```{r}
+# ROC curve
+library(pROC)
+
+# predicted probabilities
+pred_probs <- fitted(gam_log)
+
+# ROC curve
+roc_curve <- roc(bikes2$holiday, pred_probs)
+
+# plot ROC curve
+plot(roc_curve, main = "GAM Logistic Fit ROC Curve", col = "blue", lwd = 2)
+
+# add AUC to the plot
+auc_value <- auc(roc_curve)
+legend("bottomright", legend = paste("AUC =", round(auc_value, 2)), col = "blue", lty = 1, cex = 0.8)
+```
+
+The GAM model has a AUC value of 0.65, which is higher than 0.5. Hence, it indicates that this GAM model is better than random choice.
+
+
+
+### Logistic Fit
+
+Likewise, we performed a simple logistic regression fit using the `gam()` function by simply not transforming any of the variables with smoothing or non-linear equations. Below is a simple linear regression to compare with the GAM linear fit above.
+
+```{r}
+# logistic fit
+log_mod = gam( holiday ~ temperature + windspeed + 
+                    count + season,
+                  data = bikes2 , family = binomial )
+
+summary(log_mod)
+```
+
+With this model, it is also found that `temperature`, `count`, and 'season' variables have a significant effect on determining probability of whether it's being in a holiday or not, as all p-values are less than 0.05.
+
+
+
+To keep it consistent and easier to compare the outcomes between these two logistic models, we made predictions from gam objects by using the predict() method for the class gam. Here we make predictions on some new data. Note that when assigning the values 0.80 to `temperature`, 0.5 to`windspeed`, 70 to `count`, and 3 to `season`, where `season` is treated as a categorical factor with four levels - "1", "2", "3", and "4".
+
+```{r}
+# prediction with logistic fit
+preds_log <- predict( log_mod, 
+                  newdata = data.frame( temperature = 0.80, windspeed = 0.5,
+                                        count = 70, season = '3'  )  )
+# log-odd
+preds_log
+
+# probability
+predicted_probability <- plogis(preds_log)
+predicted_probability 
+```
+
+With assigning the values 0.80 to `temperature`, 0.5 to`windspeed`, 70 to `count`, and 3 to `season`, the output on the log-odds scale is -3.49445, or probability of determining it's being in a holiday is 2.947055%. This indicates that the model predicts about 2.947 percent baseline chance of a positive outcome - being in a holiday - which is slightly lower than the percentage outcome from the model with smoothing parameters.
+
+
+```{r}
+# ROC-AUC curve
+
+# predicted probabilities on the training data for logistic fit
+predicted_probabilities_log <- predict(log_mod, type = "response")
+
+# ROC curve 
+roc_curve_log <- roc(bikes2$holiday, predicted_probabilities_log)
+
+# lot the ROC curve
+plot(roc_curve_log, main = "Simple Logistic Fit ROC Curve", col = "green", lwd = 2)
+
+# add AUC to the plot 
+auc_value_log <- auc(roc_curve_log)
+legend("bottomright", legend = paste("AUC =", round(auc_value_log, 2)), col = "green", lty = 1, cex = 0.8)
+
+```
+
+In contrast, this simple logistic regression model that does not have transformation with any of the variables with smoothing or non-linear has a AUC value of 0.59, which is slightly higher than 0.5, but it has a lower ability of to distinguish between the classes. Hence, it indicates that the model is no better than random chance.
+
+
+```{r}
+
+# convert predicted probabilities to binary predictions (0 or 1)
+predicted_classes <- ifelse(pred_probs > 0.05, 1, 0)
+
+# confusion matrix
+confusion_matrix <- table(Actual = bikes2$holiday, Predicted = predicted_classes)
+
+confusion_matrix
+
+```
+
+By having an initial threshold with 0.5 in GAM, the confusion matrix showed respective components of True Negatives (TN) with 16879, False Positives (FP) with 0, False Negatives (FN) with 500, and True Positives (TP) with 0, so it was determined that the threshold was too high. Hence, a new threshold, 0.05, was picked. Although the positive class (1) is underrepresented, and it leads to a situation where TP is relatively small, the updated confusion matrix is slightly improved.
+
+
+### Model Comparison
+
+Now let's compare our regular regression fit to the GAM fit with smoothing terms. The following shows how one can extract various measures of performance, and the subsequent table shows them gathered together.
+
+```{r}
+AIC(log_mod)
+AIC(gam_log)
+```
+
+The AIC values are fairly similar, but the GAM model has a lower AIC indicating that in this case it may be better to use than the simple linear regression. 
+
+ 
+```{r}
+anova(log_mod, gam_log, test="Chisq")
+```
+
+With a p-value much smaller than 0.05, the anova test shows that the GAM model with smoothing parameters in this case had significantly improved the model over using the simple logistic regression. In addition, although both logistic regression models could not capture a great amount of probability over whether it's being in a holiday or not, using GAM model with smoothing parameters would have some improvement on our response variable.
+
+# GAM vs. GLM
+
+GLMs, or generalized linear models, are a class of statistical models that extend ordinary linear models to handle various types of data distributions and relationships by using link functions and specific error distributions. They're versatile, accommodating regression and classification problems, but assume a linear relationship between predictors and the response variable on a transformed scale. On the other hand, GAMs, or generalized additive models, take this further by allowing for non-linear relationships between predictors and responses using smoothing functions like splines. GAMs offer more flexibility when the relationships between variables are complex and not adequately captured by a linear model, allowing for a better fit in such scenarios. Ultimately, the choice between GLMs and GAMs depends on the complexity of the relationship one seeks to model in the data.
+
+Mathematical Representation of GAM:
+$$
+g(E[y|x]) = \beta_0 + f_1(x_1) + ... + f_p(x_p)
+$$
+
+Mathematical Representation of GLM:
+$$
+g(E[y|x]) = \beta_0 + \beta_1x_1 + ... + \beta_px_p
+$$
+
+Key components of GLMs include:
+
+1. **Linear Predictor**: Similar to linear regression, GLMs use a linear combination of predictors (independent variables) to model the relationship with the dependent variable. However, GLMs can handle more than just continuous outcomes; they can work with binary, count, or other non-normally distributed data.
+
+2. **Link Function**: GLMs introduce a link function that connects the linear predictor to the response variable. This link function is used to model the relationship between the expected value of the response variable and the linear predictor.
+
+3. **Error Distribution**: GLMs allow for different types of error distributions beyond the normal distribution used in simple linear regression. These could include the Poisson distribution for count data, binomial distribution for binary outcomes, or gamma distribution for continuous positive outcomes.
+
+Common examples of GLMs include:
+
+**Linear Regression**: When the response variable is continuous and normally distributed.
+
+**Logistic Regression**: Used for binary classification problems where the response variable is categorical (typically binary).
+
+**Poisson Regression**: Suitable for count data, where the response variable represents counts of events occurring in a fixed interval of time or space.
+
+
+## GLM for Linear Regression
+
+```{r}
+glm_lin = glm( count ~ temperature + windspeed + 
+                    workingday + season,
+                  data = bikes, family=poisson)
+
+summary(glm_lin)
+```
+
+The summary above shows that all the predcitors are significant with p-values <0.05.
+
+```{r}
+preds_glm <- predict(glm_lin, 
+                  newdata = data.frame( temperature = 0.40, windspeed = 0.5,
+                                        workingday = 1, season = 1))
+preds_glm
+```
+
+Above, we see that the GLM model predicts that on a working winter day with a temperature of 51 degrees Fahrenheit and a normalized windspeed of 0.5, there will be 5 bikes used. This prediction differs greatly from the prediction obtained using the GAM model. 
+
+```{r}
+AIC(glm_lin)
+```
+
+The GAM model has a lower AIC, indiating that in this case it may be better to use GAM models. 
+
+```{r}
+anova(glm_lin, gam1_lin, test="Chisq") ##maybe something else
+```
+```{r}
+glm_mod = glm( count ~ windspeed, data = bikes1 )
+gam_mod = gam( count ~ s(windspeed), data = bikes1 )
+
+predglm = predict(glm_mod)
+predgam = predict(gam_mod)
+
+ggplot(bikes1, aes(x=windspeed, y=count)) +
+  geom_point(alpha=0.2) +
+  geom_line(aes(y=predglm, color='GLM'), lwd=1.5) +
+  geom_line(aes(y=predgam, color='GAM LR'), lwd=1.5) +
+  scale_color_manual(name='Model', values=c("blue", "red"))
+gam_mod = gam( count ~ s(windspeed), data = bikes1 )
+```
+
+As we see in the plot above, a GLM regression does not account for the non-linear trend in the data that the GAM model does adjust for. 
+
+## GLM for Logisitic Regression
+
+```{r}
+glm_log = glm( holiday ~ temperature + windspeed + 
+                    count + season,
+                  data = bikes2, family=binomial)
+
+summary(glm_log)
+```
+All predictors have a significant effect on determining probability of whether it’s being in a holiday or not, as all p-values are less than 0.05.
+```{r}
+preds_glm_log <- predict( glm_log, 
+                  newdata = data.frame( temperature = 0.80, windspeed = 0.5,
+                                        count = 70, season = '3'  )  )
+# log-odd
+preds_glm_log
+```
+
+```{r}
+# probability
+predicted_probability <- plogis(preds_glm_log)
+predicted_probability 
+```
+
+With assigning the values 0.80 to temperature, 0.5 to windspeed, 70 to count, and 3 to season(summer), the output on the log-odds scale is -3.49445, or probability of being in a holiday is 2.947055%. This indicates that the model predicts about 2.947 percent baseline chance of a positive outcome - being in a holiday. This prediction is smaller than the predictoin obtained using a GAM model
+
+```{r}
+AIC(glm_log)
+```
+
+The AIC values are similar, indicating using either GAM or GLM for modeling may be appropriate.
+
+```{r}
+anova(glm_log, gam_log, test="Chisq")
+
+```
+
+With a p-value much smaller than 0.05, the anova test shows that the GAM model with smoothing parameters in this case had significantly improved the model over using the GLM model.
+
+```{r}
+# predicted probabilities
+predict_prob_glm <- predict(glm_log, type = "response")
+
+# ROC curve
+roc_curve <- roc(bikes2$holiday, predict_prob_glm)
+```
+
+```{r}
+# plot ROC curve
+plot(roc_curve, main = "GLM Logistic Fit ROC Curve", col = "blue", lwd = 2)
+# add AUC to the plot
+auc_value <- auc(roc_curve)
+legend("bottomright", legend = paste("AUC =", round(auc_value, 2)), col = "blue", lty = 1, cex = 0.8)
+```
+The GLM model has a AUC value of 0.59, which is higher than 0.5. Hence, it indicates that this GLM model is better than random choice. 
+
+```{r}
+# Assuming 'actual_values' contains the actual 'holiday' values for the test data
+
+# Function to convert probabilities to binary predictions
+convert_to_binary <- function(probabilities, threshold = 0.05) {
+  predictions <- ifelse(probabilities >= threshold, 1, 0)
+  return(predictions)
+}
+
+# Make predictions using the logistic regression model
+preds_glm_log <- predict(glm_log, 
+                         type = "response")
+
+# Convert predicted probabilities to binary predictions (0 or 1)
+binary_preds <- convert_to_binary(preds_glm_log)
+
+# Assuming 'actual_values' contains the actual 'holiday' values for the test data
+# Replace 'actual_values' with the actual values from your dataset
+
+# Create a confusion matrix
+conf_matrix <- table(Actual = bikes2$holiday, Predicted = binary_preds)
+
+# Display the confusion matrix
+print(conf_matrix)
+```
+Although the threshold was set at 0.05, the GLM logistic model did not show any True Positives (TP). Conversely, the GAM logistic model displayed TP at the same threshold, indicating that the GAM model may be better suited for this particular dataset. 
+
+# Final Thoughts
+
+In conclusion, this report has delved into the application of generalized additive models (GAMs) in the context of linear regression and logistic regression, providing a comprehensive exploration of their capabilities and a comparative analysis against generalized linear models (GLMs). The findings and insights derived from this study highlight several key points that contribute to the understanding of the efficacy of GAMs in various regression tasks.
+
+Firstly, the flexibility of GAMs in capturing complex non-linear relationships was evident throughout the analysis. The ability to incorporate smooth functions of predictors allows GAMs to adapt to intricate data patterns, providing a more nuanced representation of relationships compared to the linearity assumptions in traditional GLMs. This flexibility is particularly valuable when dealing with datasets where relationships are not easily characterized by linear models. Moreover, the comparison against GLMs revealed that GAMs outperformed in scenarios with non-linear dependencies. The improved predictive accuracy of GAMs showcase their advantage in capturing the inherent complexities present in real-world datasets. 
+
+However, it is crucial to acknowledge the trade-offs associated with the increased flexibility of GAMs. The interpretability of the model can be compromised, and careful consideration is required in selecting the appropriate smoothing functions to avoid overfitting. Furthermore, the potential increase in model complexity demands thoughtful validation procedures to ensure the generalizability of the model to new data.
+
+In summary, the application of generalized ddditive models has demonstrated their efficacy in capturing non-linear relationships in both linear regression and logistic regression scenarios. The comparison against Generalized Linear Models reveals the significance of employing GAMs when dealing with complex, non-linear dependencies. As with any modeling approach, a nuanced understanding of the data and thoughtful consideration of model complexities are essential for maximizing the benefits of GAMs in regression tasks. The findings presented here contribute to the growing body of knowledge on advanced regression techniques, offering practitioners valuable insights into the utility of GAMs in capturing the intricacies of real-world data.
