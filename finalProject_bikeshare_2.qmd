@@ -607,3 +607,15 @@ Firstly, the flexibility of GAMs in capturing complex non-linear relationships w
 However, it is crucial to acknowledge the trade-offs associated with the increased flexibility of GAMs. The interpretability of the model can be compromised, and careful consideration is required in selecting the appropriate smoothing functions to avoid overfitting. Furthermore, the potential increase in model complexity demands thoughtful validation procedures to ensure the generalizability of the model to new data.
 
 In summary, the application of generalized ddditive models has demonstrated their efficacy in capturing non-linear relationships in both linear regression and logistic regression scenarios. The comparison against Generalized Linear Models reveals the significance of employing GAMs when dealing with complex, non-linear dependencies. As with any modeling approach, a nuanced understanding of the data and thoughtful consideration of model complexities are essential for maximizing the benefits of GAMs in regression tasks. The findings presented here contribute to the growing body of knowledge on advanced regression techniques, offering practitioners valuable insights into the utility of GAMs in capturing the intricacies of real-world data.
+
+# Citations
+
+Ross, Noam. “Generalized Additive Models in R · A Free Interactive Course.” Generalized Additive Models in R, noamross.github.io/gams-in-r-course/  
+
+Jackson, Dr.&nbsp;S. “Machine Learning.” Chapter 10 Generalised Additive Models, 29 Mar. 2023, bookdown.org/ssjackson300/Machine-Learning-Lecture-Notes/generalised-additive-models.html#gams  
+
+K.sabreena. “Understanding Generalized Additive Models (GAMS): A Comprehensive Guide.” Analytics Vidhya, 1 Dec. 2023, www.analyticsvidhya.com/blog/2023/09/understanding-generalized-additive-models-gams-a-comprehensive-guide/ 
+
+Ellis, Christina. “When to Use Generalized Additive Models.” Crunching the Data, 16 Dec. 2022, crunchingthedata.com/when-to-use-generalized-additive-models/#:~:text=One%20disadvantage%20of%20GAMs%20is,Can%20take%20longer%20to%20converge  
+
+Molnar, Christoph. “Interpretable Machine Learning.” 5.3 GLM, GAM and More, 21 Aug. 2023, christophm.github.io/interpretable-ml-book/extend-lm.html  
