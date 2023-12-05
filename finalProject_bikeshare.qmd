@@ -26,7 +26,7 @@ Bike-sharing systems represent a contemporary evolution in rental services, auto
 
 With this distinctive feature transformation in bike-sharing systems and the intricate patterns of city mobility, one of our goals is to conduct linear and logistic Generalized Addictive Models (GAM) and uncover valuable insights and predict the daily demand for bikes and detect the probability of a given day being a holiday. 
 
-We also aim to test both advantages and disadvantages of GAMs with and without smoothing parameters. Additionally, we <GLM vs. GAM>.......................
+Based on the available information, it is known that GLMs expand linear models for diverse data relationships, assuming linearity on a transformed scale. In contrast, GAMs allow non-linear connections, offering more flexibility for intricate relationships. Hence, with our second goal, we aim to compare and test both advantages and disadvantages of GAMs with and without smoothing parameters. 
 
 
 Bike sharing has become a convenient mode of transportation in urban areas and in university towns, such as, Charlottesville. The data came from Fanaee-T and is available on the [UCI ML web site](https://archive.ics.uci.edu/dataset/275/bike+sharing+dataset) or at [this github link](https://github.com/BayesianModelingandComputationInPython/BookCode_Edition1/blob/main/data/bikes_hour.csv).
@@ -79,7 +79,7 @@ This dataset contains the hourly and daily count of rental bikes between years 2
 
 # Specialty of GAM:
 
-GAMs could be used on datasets that consist of predictors that are associated with the outcome variable and the response variable. GAMs are just as versatile as the GLMs because they can be used to model both numeric and categorical response variables. However, GAMs could also be applied to model features that have nonlinear relationship with the response variable. \<interpretable, additive, smoothness...\>
+GAMs could be used on datasets that consist of predictors that are associated with the outcome variable and the response variable. GAMs are just as versatile as the GLMs because they can be used to model both numeric and categorical response variables. However, GAMs could also be applied to model features that have nonlinear relationship with the response variable. 
 
 # Advantages and Disadvantages:
 
@@ -344,6 +344,20 @@ legend("bottomright", legend = paste("AUC =", round(auc_value, 2)), col = "blue"
 ```
 
 The GAM model has a AUC value of 0.65, which is higher than 0.5. Hence, it indicates that this GAM model is better than random choice.
+
+```{r}
+
+# convert predicted probabilities to binary predictions (0 or 1)
+predicted_classes <- ifelse(pred_probs > 0.05, 1, 0)
+
+# confusion matrix
+confusion_matrix <- table(Actual = bikes2$holiday, Predicted = predicted_classes)
+
+confusion_matrix
+
+```
+
+By having an initial threshold with 0.5 in GAM, the confusion matrix showed respective components of True Negatives (TN) with 16879, False Positives (FP) with 0, False Negatives (FN) with 500, and True Positives (TP) with 0, so it was determined that the threshold was too high. Hence, a new threshold, 0.05, was picked. Although the positive class (1) is underrepresented, and it leads to a situation where TP is relatively small, the updated confusion matrix is slightly improved.
 
 
 
